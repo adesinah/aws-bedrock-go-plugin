@@ -49,6 +49,10 @@ func (b *Bedrock) generateText(ctx context.Context, modelName string, input *ai.
 }
 
 func (b *Bedrock) buildConverseInput(modelName string, input *ai.ModelRequest) (*bedrockruntime.ConverseInput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("model request is nil")
+	}
+	
 	converseInput := &bedrockruntime.ConverseInput{
 		ModelId: aws.String(modelName),
 	}

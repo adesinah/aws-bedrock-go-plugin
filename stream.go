@@ -43,8 +43,12 @@ func (b *Bedrock) generateTextStream(ctx context.Context, input *bedrockruntime.
 	if err != nil {
 		return nil, fmt.Errorf("bedrock converse stream failed: %w", err)
 	}
+	stream := streamOutput.GetStream()
+	if stream == nil {
+		return nil, fmt.Errorf("bedrock converse stream is nil")
+	}
 	defer func() {
-		if closeErr := streamOutput.GetStream().Close(); closeErr != nil {
+		if closeErr := stream.Close(); closeErr != nil {
 			// Log the error but don't fail the operation
 			// In a real implementation, you might want to use a proper logger
 			_ = closeErr
@@ -57,7 +61,7 @@ func (b *Bedrock) generateTextStream(ctx context.Context, input *bedrockruntime.
 	var stopReason types.StopReason
 
 	// Process stream events
-	for event := range streamOutput.GetStream().Events() {
+	for event := range stream.Events() {
 		switch e := event.(type) {
 
 		case *types.ConverseStreamOutputMemberContentBlockDelta:
@@ -97,6 +101,9 @@ func (b *Bedrock) generateTextStream(ctx context.Context, input *bedrockruntime.
 			}
 
 		}
+	}
+	if err := stream.Err(); err != nil {
+		return nil, fmt.Errorf("bedrock converse stream error: %w", err)
 	}
 
 	// Return final response

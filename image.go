@@ -30,14 +30,18 @@ import (
 
 // generateImage handles image generation using Bedrock InvokeModel API
 func (b *Bedrock) generateImage(ctx context.Context, modelName string, input *ai.ModelRequest, cb func(context.Context, *ai.ModelResponseChunk) error) (*ai.ModelResponse, error) {
+	if input == nil {
+		return nil, fmt.Errorf("model request is nil")
+	}
+	
 	// Extract prompt from the first message
 	var prompt string
 	if len(input.Messages) > 0 && len(input.Messages[0].Content) > 0 {
-		if input.Messages[0].Content[0].IsText() {
-			prompt = input.Messages[0].Content[0].Text
+		part := input.Messages[0].Content[0]
+		if part != nil && part.IsText() {
+			prompt = part.Text
 		}
 	}
-
 	if prompt == "" {
 		return nil, fmt.Errorf("no text prompt found for image generation")
 	}

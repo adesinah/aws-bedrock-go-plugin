@@ -29,6 +29,10 @@ import (
 )
 
 func (b *Bedrock) embed(ctx context.Context, modelName string, req *ai.EmbedRequest) (*ai.EmbedResponse, error) {
+	if req == nil {
+		return nil, fmt.Errorf("embed request is nil")
+	}
+
 	var embeddings []*ai.Embedding
 
 	// Process each document
