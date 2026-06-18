@@ -7,6 +7,7 @@ A comprehensive AWS Bedrock plugin for Genkit Go that provides text generation, 
 - **Text Generation**: Support for multiple foundation models via AWS Bedrock Converse API
 - **Image Generation**: Support for image generation models like Amazon Titan Image Generator
 - **Embeddings**: Support for text embedding models from Amazon Titan and Cohere
+- **Reranking**: Support for Cohere Rerank models through Bedrock `InvokeModel`
 - **Streaming**: Full streaming support for real-time responses
 - **Tool Calling**: Complete function calling capabilities with schema validation and type conversion
 - **Multimodal Support**: Support for text + image inputs (vision models)
@@ -29,6 +30,9 @@ A comprehensive AWS Bedrock plugin for Genkit Go that provides text generation, 
 ### Embedding Models
 - **Amazon Titan Embeddings**: Text v1/v2, Multimodal v1
 - **Cohere**: Embed English/Multilingual v3
+
+### Reranking Models
+- **Cohere**: Rerank v3.5
 
 ### Multimodal Models (Text + Vision)
 - All Claude 3/3.5/4 models
@@ -137,6 +141,41 @@ func main() {
 }
 ```
 
+## Rerank Documents
+
+Genkit Go does not yet expose a first-class reranker action, so the plugin provides a standalone `Rerank` helper. It reuses the initialized Bedrock plugin configuration and returns documents ordered by relevance with scores attached to `ai.RankedDocumentMetadata`.
+
+```go
+resp, err := bedrock.Rerank(ctx, g, "cohere.rerank-v3-5:0", &ai.RerankerRequest{
+    Query: ai.DocumentFromText("Which document explains Bedrock authentication?", nil),
+    Documents: []*ai.Document{
+        ai.DocumentFromText("Configure AWS credentials with environment variables or AWS SSO.", nil),
+        ai.DocumentFromText("Titan Image Generator returns base64-encoded PNG data.", nil),
+    },
+    Options: &bedrock.RerankOptions{TopN: 1},
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for _, doc := range resp.Documents {
+    log.Printf("score=%.3f text=%s", doc.Metadata.Score, doc.Content[0].Text)
+}
+```
+
+Run the reranking example with:
+
+```bash
+cd examples/reranking
+go run main.go
+```
+
+From the repository root, run the optional live reranking test with:
+
+```bash
+go test . -run TestBedrockLive_CohereRerank -test-bedrock-rerank-model=cohere.rerank-v3-5:0
+```
+
 ## Configuration Options
 
 The plugin supports various configuration options:
@@ -222,6 +261,7 @@ The repository includes comprehensive examples:
 - **`examples/tool_calling/`** - Function calling with multiple tools
 - **`examples/image_generation/`** - Image generation and file saving
 - **`examples/embeddings/`** - Text embeddings and similarity
+- **`examples/reranking/`** - Cohere Rerank through Bedrock
 - **`examples/multimodal/`** - Vision models with image inputs
 - **`examples/advanced_schemas/`** - Complex tool schemas and validation
 - **`examples/prompt_caching`** - Several calls with prompt caching enabled to save costs
@@ -243,6 +283,10 @@ go run main.go
 
 # Run image generation example
 cd ../image_generation
+go run main.go
+
+# Run reranking example
+cd ../reranking
 go run main.go
 ```
 
