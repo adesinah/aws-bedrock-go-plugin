@@ -60,9 +60,9 @@ func (b *Bedrock) Name() string {
 // This method follows the same pattern as the Ollama plugin.
 func (b *Bedrock) Init(ctx context.Context) []api.Action {
 	b.mu.Lock()
+	defer b.mu.Unlock()
 
 	if b.initted {
-		b.mu.Unlock()
 		panic("bedrock: Init already called")
 	}
 
@@ -99,11 +99,21 @@ func (b *Bedrock) Init(ctx context.Context) []api.Action {
 
 	b.initted = true
 
-	// Release the mutex
-	b.mu.Unlock()
-
-	// Don't defer unlock since we already unlocked manually
 	return []api.Action{}
+}
+
+func (b *Bedrock) withRequestTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
+	if b == nil {
+		return ctx, func() {}
+	}
+	return withRequestTimeout(ctx, b.RequestTimeout)
+}
+
+func withRequestTimeout(ctx context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
+	if timeout <= 0 {
+		return ctx, func() {}
+	}
+	return context.WithTimeout(ctx, timeout)
 }
 
 // DefineModel defines a model in the registry.

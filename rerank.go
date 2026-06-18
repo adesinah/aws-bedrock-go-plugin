@@ -78,6 +78,7 @@ func Rerank(ctx context.Context, g *genkit.Genkit, modelID string, req *ai.Reran
 	p.mu.Lock()
 	initted := p.initted
 	client := p.client
+	requestTimeout := p.RequestTimeout
 	p.mu.Unlock()
 
 	if !initted {
@@ -89,6 +90,9 @@ func Rerank(ctx context.Context, g *genkit.Genkit, modelID string, req *ai.Reran
 	if req == nil {
 		return nil, errors.New("bedrock.Rerank: request required")
 	}
+
+	ctx, cancel := withRequestTimeout(ctx, requestTimeout)
+	defer cancel()
 
 	return rerank(ctx, client, modelID, req)
 }

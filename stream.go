@@ -28,6 +28,9 @@ import (
 )
 
 func (b *Bedrock) generateTextStream(ctx context.Context, input *bedrockruntime.ConverseInput, originalInput *ai.ModelRequest, cb func(context.Context, *ai.ModelResponseChunk) error) (*ai.ModelResponse, error) {
+	ctx, cancel := b.withRequestTimeout(ctx)
+	defer cancel()
+
 	// Convert ConverseInput to ConverseStreamInput
 	streamInput := &bedrockruntime.ConverseStreamInput{
 		ModelId:                      input.ModelId,

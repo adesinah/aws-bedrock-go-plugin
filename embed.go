@@ -98,6 +98,9 @@ func (b *Bedrock) getTitanEmbedding(ctx context.Context, modelName, text string)
 		Accept:      aws.String("application/json"),
 	}
 
+	ctx, cancel := b.withRequestTimeout(ctx)
+	defer cancel()
+
 	response, err := b.client.InvokeModel(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to invoke model: %w", err)
@@ -136,6 +139,9 @@ func (b *Bedrock) getCohereEmbedding(ctx context.Context, modelName, text string
 		ContentType: aws.String("application/json"),
 		Accept:      aws.String("application/json"),
 	}
+
+	ctx, cancel := b.withRequestTimeout(ctx)
+	defer cancel()
 
 	response, err := b.client.InvokeModel(ctx, input)
 	if err != nil {

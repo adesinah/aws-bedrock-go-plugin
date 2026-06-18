@@ -103,6 +103,9 @@ func (b *Bedrock) generateTitanImage(ctx context.Context, modelName, prompt stri
 		Accept:      aws.String("application/json"),
 	}
 
+	ctx, cancel := b.withRequestTimeout(ctx)
+	defer cancel()
+
 	response, err := b.client.InvokeModel(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to invoke model: %w", err)
@@ -173,6 +176,9 @@ func (b *Bedrock) generateStableDiffusionImage(ctx context.Context, modelName, p
 		ContentType: aws.String("application/json"),
 		Accept:      aws.String("application/json"),
 	}
+
+	ctx, cancel := b.withRequestTimeout(ctx)
+	defer cancel()
 
 	response, err := b.client.InvokeModel(ctx, input)
 	if err != nil {
@@ -250,6 +256,9 @@ func (b *Bedrock) generateNovaCanvasImage(ctx context.Context, modelName, prompt
 		ContentType: aws.String("application/json"),
 		Accept:      aws.String("application/json"),
 	}
+
+	ctx, cancel := b.withRequestTimeout(ctx)
+	defer cancel()
 
 	response, err := b.client.InvokeModel(ctx, input)
 	if err != nil {
