@@ -59,8 +59,9 @@ func requireLiveClaude(t *testing.T) (context.Context, *genkit.Genkit, ai.Model)
 		t.Skip("pass -test-bedrock-model-claude=<thinking-capable-model-id> to run")
 	}
 	ctx := context.Background()
-	g := genkit.Init(ctx, genkit.WithPlugins(&Bedrock{Region: *testRegion}))
-	m := (&Bedrock{Region: *testRegion}).DefineModel(g, ModelDefinition{
+	pb := &Bedrock{Region: *testRegion}
+	g := genkit.Init(ctx, genkit.WithPlugins(pb))
+	m := pb.DefineModel(g, ModelDefinition{
 		Name: *testModelClaude,
 		Type: "chat",
 	}, nil)
