@@ -339,6 +339,9 @@ func (b *Bedrock) buildConverseInput(modelName string, input *ai.ModelRequest) (
 
 // generateTextSync handles synchronous text generation
 func (b *Bedrock) generateTextSync(ctx context.Context, input *bedrockruntime.ConverseInput, originalInput *ai.ModelRequest) (*ai.ModelResponse, error) {
+	ctx, cancel := b.withRequestTimeout(ctx)
+	defer cancel()
+
 	// Call Bedrock Converse API
 	response, err := b.client.Converse(ctx, input)
 	if err != nil {
